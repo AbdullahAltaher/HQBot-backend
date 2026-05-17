@@ -1,0 +1,17 @@
+{
+  "name": "rag-chatbot",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "ingest": "node scripts/ingest.js",
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.96.0",
+    "@supabase/supabase-js": "^2.105.4",
+    "cohere-ai": "^8.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^4.22.2"
+  }
+}
