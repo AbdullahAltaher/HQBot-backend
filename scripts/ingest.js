@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { CohereClient } from 'cohere-ai'
+import OpenAI from 'openai'
 import fs from 'fs'
 import path from 'path'
 import dotenv from 'dotenv'
@@ -11,13 +11,12 @@ const supabase = createClient(
   process.env.SUPABASE_ANON_KEY
 )
 
-const cohere = new CohereClient({ token: process.env.COHERE_API_KEY })
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
 function chunkText(text, chunkSize = 500) {
   const sentences = text.split(/(?<=[.!?؟،\n])\s+/)
   const chunks = []
   let current = ''
-
   for (const sentence of sentences) {
     if ((current + sentence).length > chunkSize) {
       if (current.trim()) chunks.push(current.trim())
@@ -31,12 +30,11 @@ function chunkText(text, chunkSize = 500) {
 }
 
 async function embedBatch(texts) {
-  const response = await cohere.embed({
-    texts,
-    model: 'embed-multilingual-v3.0',
-    inputType: 'search_document'
+  const response = await openai.embeddings.create({
+    model: 'text-embedding-3-small',
+    input: texts,
   })
-  return response.embeddings
+  return response.data.map(d => d.embedding)
 }
 
 async function ingestFile(filePath, sourceType, author = null) {
@@ -54,17 +52,13 @@ async function ingestFile(filePath, sourceType, author = null) {
 
   if (docError) throw new Error(`Document insert failed: ${docError.message}`)
 
-  // process in batches of 90 chunks at a time
   const BATCH_SIZE = 90
   let done = 0
 
   for (let b = 0; b < chunks.length; b += BATCH_SIZE) {
     const batch = chunks.slice(b, b + BATCH_SIZE)
-
-    // embed entire batch in one API call
     const embeddings = await embedBatch(batch)
 
-    // insert all chunks in batch
     const rows = batch.map((content, i) => ({
       document_id: doc.id,
       content,
@@ -85,8 +79,8 @@ async function ingestFile(filePath, sourceType, author = null) {
 
 async function main() {
   const files = [
-  { path: 'data/taht-rayat-alihtelal-full.txt', type: 'history', author: 'سلطان القاسمي' },
-]
+    { path: 'data/taht-rayat-alihtelal-full.txt', type: 'history', author: 'سلطان القاسمي' },
+  ]
 
   for (const file of files) {
     if (fs.existsSync(file.path)) {
