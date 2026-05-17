@@ -22,6 +22,13 @@ app.post('/api/chat', async (req, res) => {
   }
 })
 
+app.get('/api/debug-prompt', (_, res) => {
+  res.json({
+    model: 'claude-sonnet-4-6',
+    note: 'System prompt is built dynamically in retrieval.js based on retrieved chunks'
+  })
+})
+
 app.get('/api/health', (_, res) => res.json({ status: 'ok' }))
 
 const PORT = process.env.PORT || 3001
