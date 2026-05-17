@@ -2,7 +2,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 import { createClient } from '@supabase/supabase-js'
-import { CohereClient } from 'cohere-ai'
+import OpenAI from 'openai'
 import Anthropic from '@anthropic-ai/sdk'
 
 const supabase = createClient(
@@ -10,16 +10,19 @@ const supabase = createClient(
   process.env.SUPABASE_ANON_KEY
 )
 
-const cohere = new CohereClient({ token: process.env.COHERE_API_KEY })
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-export async function query(userQuestion, history = []) {
-  const embedResponse = await cohere.embed({
-    texts: [userQuestion],
-    model: 'embed-multilingual-v3.0',
-    inputType: 'search_query'
+async function getEmbedding(text) {
+  const response = await openai.embeddings.create({
+    model: 'text-embedding-3-small',
+    input: text,
   })
-  const queryEmbedding = embedResponse.embeddings[0]
+  return response.data[0].embedding
+}
+
+export async function query(userQuestion, history = []) {
+  const queryEmbedding = await getEmbedding(userQuestion)
 
   const { data: chunks, error } = await supabase.rpc('match_chunks', {
     query_embedding: queryEmbedding,
@@ -51,7 +54,6 @@ ${context}`
     : `أنت مساعد متخصص في تاريخ القواسم والخليج العربي.
 لا تتوفر معلومات حول هذا الموضوع في قاعدة البيانات حالياً.`
 
-  // build conversation history for Claude
   const conversationMessages = [
     ...history.slice(-6).map(m => ({
       role: m.role === 'user' ? 'user' : 'assistant',
