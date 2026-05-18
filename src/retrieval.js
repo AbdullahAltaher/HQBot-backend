@@ -21,6 +21,23 @@ async function getEmbedding(text) {
   return response.data[0].embedding
 }
 
+async function getSuggestedQuestions(question, answer) {
+  const message = await anthropic.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 300,
+    messages: [{
+      role: 'user',
+      content: `بناءً على هذا السؤال: "${question}"
+وهذه الإجابة: "${answer.slice(0, 500)}"
+
+اكتب 3 أسئلة متابعة باللغة العربية مرتبطة بالموضوع.
+أرجع فقط الأسئلة الثلاثة، كل سؤال في سطر منفصل، بدون ترقيم أو رموز.`
+    }]
+  })
+  const text = message.content[0].text
+  return text.split('\n').map(q => q.trim()).filter(q => q.length > 5).slice(0, 3)
+}
+
 export async function query(userQuestion, history = []) {
   const queryEmbedding = await getEmbedding(userQuestion)
 
@@ -47,14 +64,7 @@ export async function query(userQuestion, history = []) {
 - اذكر التواريخ والأسماء بدقة كما وردت في النص
 - تذكر سياق المحادثة السابقة وأجب بشكل متسلسل
 - إذا لم يكن هناك أي معلومة ذات صلة، قل: "لا تتوفر معلومات حول هذا الموضوع في قاعدة البيانات"
-- يجب دائماً وبشكل إلزامي أن تنتهي كل إجابة بهذا القسم بالضبط، ولا تضف أي جملة بعده:
-
-## أسئلة مقترحة:
-1. [اكتب هنا سؤالاً متابعاً حقيقياً]
-2. [اكتب هنا سؤالاً متابعاً حقيقياً]
-3. [اكتب هنا سؤالاً متابعاً حقيقياً]
-
-لا تكتب أي جملة بعد الأسئلة المقترحة. لا تسأل المستخدم "هل تودّ..." أو أي سؤال آخر.
+- لا تنهِ إجابتك بسؤال للمستخدم
 
 ## السياق من الكتاب:
 ${context}`
@@ -76,9 +86,17 @@ ${context}`
     messages: conversationMessages
   })
 
+  const answer = message.content[0].text
+    .replace(/\n*هل تو[دّ].*?؟\s*$/g, '').trim()
+
+  const suggestedQuestions = context
+    ? await getSuggestedQuestions(userQuestion, answer)
+    : []
+
   return {
-    answer: message.content[0].text,
+    answer,
     sources: chunks || [],
-    hasContext: !!context
+    hasContext: !!context,
+    suggestedQuestions
   }
 }
