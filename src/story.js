@@ -18,6 +18,14 @@ async function getEmbedding(text) {
   return response.data[0].embedding
 }
 
+function detectMood(topic) {
+  if (topic.includes('بحر') || topic.includes('سفن') || topic.includes('ساحل') || topic.includes('خليج') || topic.includes('معاهدة')) return 'sea'
+  if (topic.includes('نجد') || topic.includes('صحراء') || topic.includes('سعود')) return 'desert'
+  if (topic.includes('معركة') || topic.includes('حرب') || topic.includes('قتال') || topic.includes('هجوم')) return 'battle'
+  if (topic.includes('قصر') || topic.includes('شيخ') || topic.includes('حاكم') || topic.includes('دبلوماس')) return 'palace'
+  return 'sea'
+}
+
 export async function generateStory(topic) {
   const embedding = await getEmbedding(topic)
 
@@ -60,6 +68,7 @@ ${context}`
 
   return {
     story: message.content[0].text,
-    topic
+    topic,
+    mood: detectMood(topic)
   }
 }
