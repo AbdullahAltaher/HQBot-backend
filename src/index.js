@@ -3,6 +3,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import OpenAI from 'openai'
 import { query } from './retrieval.js'
+import { generateQuiz } from './quiz.js'
 
 dotenv.config()
 
@@ -15,9 +16,20 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 app.post('/api/chat', async (req, res) => {
   const { question, history } = req.body
   if (!question) return res.status(400).json({ error: 'Question is required' })
-
   try {
     const result = await query(question, history || [])
+    res.json(result)
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+app.post('/api/quiz', async (req, res) => {
+  const { book, difficulty } = req.body
+  if (!book) return res.status(400).json({ error: 'Book is required' })
+  try {
+    const result = await generateQuiz(book, difficulty || 'medium')
     res.json(result)
   } catch (err) {
     console.error(err)
@@ -28,11 +40,10 @@ app.post('/api/chat', async (req, res) => {
 app.post('/api/tts', async (req, res) => {
   const { text } = req.body
   if (!text) return res.status(400).json({ error: 'Text is required' })
-
   try {
     const mp3 = await openai.audio.speech.create({
       model: 'tts-1',
-      voice: 'nova',
+      voice: 'onyx',
       input: text.slice(0, 4096),
     })
     const buffer = Buffer.from(await mp3.arrayBuffer())
@@ -45,10 +56,7 @@ app.post('/api/tts', async (req, res) => {
 })
 
 app.get('/api/debug-prompt', (_, res) => {
-  res.json({
-    model: 'claude-sonnet-4-6',
-    note: 'System prompt is built dynamically in retrieval.js based on retrieved chunks'
-  })
+  res.json({ model: 'claude-sonnet-4-6' })
 })
 
 app.get('/api/health', (_, res) => res.json({ status: 'ok' }))
