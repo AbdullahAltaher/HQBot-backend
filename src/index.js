@@ -4,6 +4,7 @@ import dotenv from 'dotenv'
 import OpenAI from 'openai'
 import { query } from './retrieval.js'
 import { generateQuiz } from './quiz.js'
+import { generateStory } from './story.js'
 
 dotenv.config()
 
@@ -63,3 +64,16 @@ app.get('/api/health', (_, res) => res.json({ status: 'ok' }))
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`))
+
+
+app.post('/api/story', async (req, res) => {
+  const { topic } = req.body
+  if (!topic) return res.status(400).json({ error: 'Topic is required' })
+  try {
+    const result = await generateStory(topic)
+    res.json(result)
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: err.message })
+  }
+})
