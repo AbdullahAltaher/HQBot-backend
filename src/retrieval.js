@@ -43,7 +43,7 @@ export async function query(userQuestion, history = []) {
 
   const { data: chunks, error } = await supabase.rpc('match_chunks', {
     query_embedding: queryEmbedding,
-    match_threshold: 0.15,
+    match_threshold: 0.1,
     match_count: 12
   })
 
