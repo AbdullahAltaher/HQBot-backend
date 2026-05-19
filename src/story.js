@@ -19,10 +19,10 @@ async function getEmbedding(text) {
 }
 
 function detectMood(topic) {
-  if (topic.includes('بحر') || topic.includes('سفن') || topic.includes('ساحل') || topic.includes('خليج') || topic.includes('معاهدة')) return 'sea'
-  if (topic.includes('نجد') || topic.includes('صحراء') || topic.includes('سعود')) return 'desert'
-  if (topic.includes('معركة') || topic.includes('حرب') || topic.includes('قتال') || topic.includes('هجوم')) return 'battle'
-  if (topic.includes('قصر') || topic.includes('شيخ') || topic.includes('حاكم') || topic.includes('دبلوماس')) return 'palace'
+  if (topic.includes('بحر') || topic.includes('سفن') || topic.includes('ساحل') || topic.includes('خليج') || topic.includes('معاهدة') || topic.includes('ميناء') || topic.includes('جزيرة')) return 'sea'
+  if (topic.includes('نجد') || topic.includes('صحراء') || topic.includes('سعود') || topic.includes('بادية') || topic.includes('قبيلة')) return 'desert'
+  if (topic.includes('معركة') || topic.includes('حرب') || topic.includes('قتال') || topic.includes('هجوم') || topic.includes('غزو') || topic.includes('جيش')) return 'battle'
+  if (topic.includes('قصر') || topic.includes('شيخ') || topic.includes('حاكم') || topic.includes('سلطان') || topic.includes('دبلوماس') || topic.includes('اجتماع')) return 'palace'
   return 'sea'
 }
 
@@ -51,15 +51,15 @@ export async function generateStory(topic) {
       content: `أنت كاتب روائي متخصص في التاريخ العربي. بناءً على المعلومات التاريخية الحقيقية أدناه، اكتب قصة سردية أدبية رائعة عن: "${topic}"
 
 ## قواعد الكتابة:
-- ابدأ بجملة افتتاحية تصويرية تضع القارئ في المشهد مباشرة (مثل: "كان الفجر يتسلل...")
-- اكتب بأسلوب روائي عربي راقٍ، غني بالصور البلاغية
-- صف المكان والزمان والأجواء بتفصيل حسي (الأصوات، الروائح، المشاعر)
+- ابدأ بجملة افتتاحية تصويرية تضع القارئ في المشهد مباشرة (مثل: "كان الفجر يتسلل ببطء فوق خور رأس الخيمة...")
+- اكتب بأسلوب روائي عربي راقٍ، غني بالصور البلاغية والاستعارات
+- صف المكان والزمان والأجواء بتفصيل حسي — الأصوات، الروائح، درجة الحرارة، المشاعر
 - أدخل أفكار وعواطف الشخصيات التاريخية الحقيقية
-- استخدم الحوار بين الشخصيات عند الإمكان
-- قسّم القصة إلى 3 فصول قصيرة مع عناوين
-- اجعل القصة مثيرة ومشوقة مع الحفاظ على الدقة التاريخية
-- الطول: 600-900 كلمة
-- لا تذكر أنك تعتمد على مصادر، فقط اسرد القصة
+- استخدم الحوار الدرامي بين الشخصيات عند الإمكان
+- قسّم القصة إلى 3 فصول قصيرة بعناوين شعرية
+- اجعل القصة مشوقة مع توتر درامي وذروة وخاتمة
+- الطول: 700-1000 كلمة
+- لا تذكر أنك تعتمد على مصادر، فقط اسرد القصة كما لو كنت شاهداً عليها
 
 ## المعلومات التاريخية:
 ${context}`
