@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
+import OpenAI from 'openai'
 import { query } from './retrieval.js'
 
 dotenv.config()
@@ -9,6 +10,8 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+
 app.post('/api/chat', async (req, res) => {
   const { question, history } = req.body
   if (!question) return res.status(400).json({ error: 'Question is required' })
@@ -16,6 +19,25 @@ app.post('/api/chat', async (req, res) => {
   try {
     const result = await query(question, history || [])
     res.json(result)
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+app.post('/api/tts', async (req, res) => {
+  const { text } = req.body
+  if (!text) return res.status(400).json({ error: 'Text is required' })
+
+  try {
+    const mp3 = await openai.audio.speech.create({
+      model: 'tts-1',
+      voice: 'nova',
+      input: text.slice(0, 4096),
+    })
+    const buffer = Buffer.from(await mp3.arrayBuffer())
+    res.set('Content-Type', 'audio/mpeg')
+    res.send(buffer)
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: err.message })
