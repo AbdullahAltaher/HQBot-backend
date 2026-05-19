@@ -22,8 +22,19 @@ function detectMood(topic) {
   if (topic.includes('بحر') || topic.includes('سفن') || topic.includes('ساحل') || topic.includes('خليج') || topic.includes('معاهدة') || topic.includes('ميناء') || topic.includes('جزيرة')) return 'sea'
   if (topic.includes('نجد') || topic.includes('صحراء') || topic.includes('سعود') || topic.includes('بادية') || topic.includes('قبيلة')) return 'desert'
   if (topic.includes('معركة') || topic.includes('حرب') || topic.includes('قتال') || topic.includes('هجوم') || topic.includes('غزو') || topic.includes('جيش')) return 'battle'
-  if (topic.includes('قصر') || topic.includes('شيخ') || topic.includes('حاكم') || topic.includes('سلطان') || topic.includes('دبلوماس') || topic.includes('اجتماع')) return 'palace'
+  if (topic.includes('قصر') || topic.includes('شيخ') || topic.includes('حاكم') || topic.includes('سلطان') || topic.includes('اجتماع')) return 'palace'
   return 'sea'
+}
+
+function makeDramatic(text) {
+  return text
+    .replace(/#+\s[^\n]*/g, '')
+    .replace(/\*+/g, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/\.\s+/g, '... ')
+    .replace(/!\s+/g, '!... ')
+    .replace(/؟\s+/g, '؟... ')
+    .trim()
 }
 
 export async function generateStory(topic) {
@@ -57,7 +68,7 @@ export async function generateStory(topic) {
 - أدخل أفكار وعواطف الشخصيات التاريخية الحقيقية
 - استخدم الحوار الدرامي بين الشخصيات عند الإمكان
 - قسّم القصة إلى 3 فصول قصيرة بعناوين شعرية
-- اجعل القصة مشوقة مع توتر درامي وذروة وخاتمة
+- اجعل القصة مشوقة مع توتر درامي وذروة وخاتمة مؤثرة
 - الطول: 700-1000 كلمة
 - لا تذكر أنك تعتمد على مصادر، فقط اسرد القصة كما لو كنت شاهداً عليها
 
@@ -66,8 +77,12 @@ ${context}`
     }]
   })
 
+  const rawStory = message.content[0].text
+  const ttsText = makeDramatic(rawStory)
+
   return {
-    story: message.content[0].text,
+    story: rawStory,
+    ttsText,
     topic,
     mood: detectMood(topic)
   }

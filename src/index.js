@@ -38,13 +38,25 @@ app.post('/api/quiz', async (req, res) => {
   }
 })
 
+app.post('/api/story', async (req, res) => {
+  const { topic } = req.body
+  if (!topic) return res.status(400).json({ error: 'Topic is required' })
+  try {
+    const result = await generateStory(topic)
+    res.json(result)
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: err.message })
+  }
+})
+
 app.post('/api/tts', async (req, res) => {
   const { text } = req.body
   if (!text) return res.status(400).json({ error: 'Text is required' })
   try {
     const mp3 = await openai.audio.speech.create({
-      model: 'tts-1',
-      voice: 'onyx',
+      model: 'tts-1-hd',
+      voice: 'fable',
       input: text.slice(0, 4096),
     })
     const buffer = Buffer.from(await mp3.arrayBuffer())
@@ -64,16 +76,3 @@ app.get('/api/health', (_, res) => res.json({ status: 'ok' }))
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`))
-
-
-app.post('/api/story', async (req, res) => {
-  const { topic } = req.body
-  if (!topic) return res.status(400).json({ error: 'Topic is required' })
-  try {
-    const result = await generateStory(topic)
-    res.json(result)
-  } catch (err) {
-    console.error(err)
-    res.status(500).json({ error: err.message })
-  }
-})
