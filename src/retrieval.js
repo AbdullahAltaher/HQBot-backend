@@ -60,7 +60,7 @@ export async function query(userQuestion, history = []) {
   const { data: chunks, error } = await supabase.rpc('match_chunks', {
     query_embedding: queryEmbedding,
     match_threshold: 0.0,
-    match_count: 30
+    match_count: 12
   })
 
   if (error) throw new Error(`Retrieval failed: ${error.message}`)
