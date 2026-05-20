@@ -2,23 +2,10 @@ import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import OpenAI from 'openai'
+import { createClient } from '@supabase/supabase-js'
 import { query } from './retrieval.js'
 import { generateQuiz } from './quiz.js'
 import { generateStory } from './story.js'
-import { createClient } from '@supabase/supabase-js'
-
-
-const supabaseClient = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY)
-
-app.get('/api/entities', async (req, res) => {
-  try {
-    const { data, error } = await supabaseClient.from('entities').select('*')
-    if (error) throw error
-    res.json(data)
-  } catch (err) {
-    res.status(500).json({ error: err.message })
-  }
-})
 
 dotenv.config()
 
@@ -27,6 +14,7 @@ app.use(cors())
 app.use(express.json())
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY)
 
 app.post('/api/chat', async (req, res) => {
   const { question, history } = req.body
@@ -76,6 +64,17 @@ app.post('/api/tts', async (req, res) => {
     const buffer = Buffer.from(await mp3.arrayBuffer())
     res.set('Content-Type', 'audio/mpeg')
     res.send(buffer)
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+app.get('/api/entities', async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('entities').select('*')
+    if (error) throw error
+    res.json(data)
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: err.message })
