@@ -38,13 +38,29 @@ async function getSuggestedQuestions(question, answer) {
   return text.split('\n').map(q => q.trim()).filter(q => q.length > 5).slice(0, 3)
 }
 
+
+async function expandQuery(question) {
+  const message = await anthropic.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 150,
+    messages: [{
+      role: 'user',
+      content: `حوّل هذا السؤال إلى كلمات مفتاحية بالعربية تساعد في البحث في كتب تاريخية عربية. أرجع فقط الكلمات المفتاحية بدون شرح:
+السؤال: ${question}`
+    }]
+  })
+  return `${question} ${message.content[0].text}`
+}
+
+
 export async function query(userQuestion, history = []) {
-  const queryEmbedding = await getEmbedding(userQuestion)
+  const expandedQuestion = await expandQuery(userQuestion)
+  const queryEmbedding = await getEmbedding(expandedQuestion)
 
   const { data: chunks, error } = await supabase.rpc('match_chunks', {
     query_embedding: queryEmbedding,
     match_threshold: 0.0,
-    match_count: 20
+    match_count: 30
   })
 
   if (error) throw new Error(`Retrieval failed: ${error.message}`)
