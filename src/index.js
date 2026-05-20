@@ -5,6 +5,20 @@ import OpenAI from 'openai'
 import { query } from './retrieval.js'
 import { generateQuiz } from './quiz.js'
 import { generateStory } from './story.js'
+import { createClient } from '@supabase/supabase-js'
+
+
+const supabaseClient = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY)
+
+app.get('/api/entities', async (req, res) => {
+  try {
+    const { data, error } = await supabaseClient.from('entities').select('*')
+    if (error) throw error
+    res.json(data)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
 
 dotenv.config()
 
